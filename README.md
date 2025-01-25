@@ -40,6 +40,8 @@ ktx use
 ktx rename kind-cluster-01
 
 # 交互式重命名
+ktx rename
+```
 
 5. 删除集群上下文
 
