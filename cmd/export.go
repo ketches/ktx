@@ -18,8 +18,8 @@ var (
 // exportCmd represents the export command
 var exportCmd = &cobra.Command{
 	Use:   "export",
-	Short: "export context to kubeconfig file",
-	Long:  `export context to kubeconfig file`,
+	Short: "export context to kubeconfig file from ~/.kube/config",
+	Long:  `export context to kubeconfig file from ~/.kube/config`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runExport(args)
 	},
