@@ -4,8 +4,6 @@ Copyright © 2025 Pone Ding <poneding@gmail.com>
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/poneding/ktx/internal/kubeconfig"
 	"github.com/poneding/ktx/internal/output"
 	"github.com/poneding/ktx/internal/prompt"
@@ -52,15 +50,4 @@ func useContext(dst string) {
 	current.CurrentContext = dst
 	kubeconfig.Save(current)
 	output.Done("Context <%s> is now in use.", dst)
-}
-
-func completeWithContextProfile(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	current := kubeconfig.Contexts(kubeconfig.Load())
-
-	var completions []string
-	for _, context := range current {
-		completions = append(completions, fmt.Sprintf("%s\t[%s] %s - %s", context.Name, context.Emoji, context.Namespace, context.Server))
-	}
-
-	return completions, cobra.ShellCompDirectiveNoSpace | cobra.ShellCompDirectiveNoFileComp
 }
