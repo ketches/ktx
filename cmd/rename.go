@@ -50,7 +50,7 @@ func renameContext(dst string, config *clientcmdapi.Config) {
 
 	new := prompt.TextInput("Enter a new name")
 	if contextNameConflict(new, config) {
-		if prompt.YesNo(fmt.Sprintf("Context name <%s> already exists, rename it?", new)) != "Yes" {
+		if prompt.YesNo(fmt.Sprintf("Context name <%s> already exists, rename it", new)) != "Yes" {
 			return
 		}
 		new = prompt.TextInput("Enter a new name")

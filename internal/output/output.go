@@ -6,19 +6,19 @@ import (
 	"github.com/fatih/color"
 )
 
-func Fatal(s string, a ...any) {
-	color.Red("😹 "+s, a...)
+func Fatal(format string, a ...any) {
+	color.Red("😾 "+format, a...)
 	os.Exit(1)
 }
 
-func Note(s string, a ...interface{}) {
-	color.New(color.Faint).Printf("😼 "+s+"\n", a...)
+func Note(format string, a ...interface{}) {
+	color.New(color.Faint).Printf("😼 "+format+"\n", a...)
 }
 
-func Done(s string, a ...interface{}) {
-	color.Green("😺 "+s, a...)
+func Done(format string, a ...interface{}) {
+	color.Green("😺 "+format, a...)
 }
 
-func Fail(s string, a ...interface{}) {
-	color.Red("😾 "+s, a...)
+func Fail(format string, a ...interface{}) {
+	color.Red("😾 "+format, a...)
 }

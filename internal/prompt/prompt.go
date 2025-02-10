@@ -14,16 +14,16 @@ import (
 
 func YesNo(label string) string {
 	templates := &promptui.SelectTemplates{
-		Label:    "# {{ . }}:",
-		Active:   promptui.Styler(promptui.FGCyan, promptui.FGUnderline)("➜ {{ . }}"),
+		Label:    promptui.Styler(promptui.FGYellow)("# {{ . }}?"),
+		Active:   promptui.Styler(promptui.FGCyan, promptui.FGUnderline)("➤ {{ . }}"),
 		Inactive: promptui.Styler(promptui.FGFaint)("  {{ . }}"),
-		Selected: promptui.Styler(promptui.FGFaint)("✔ Selected: {{ . }}"),
 	}
 	prompt := promptui.Select{
-		Label:     label,
-		Items:     []string{"No", "Yes"},
-		Templates: templates,
-		Size:      4,
+		Label:        label,
+		Items:        []string{"No", "Yes"},
+		Templates:    templates,
+		Size:         4,
+		HideSelected: true,
 	}
 	_, obj, err := prompt.Run()
 	if err != nil {
@@ -35,7 +35,7 @@ func YesNo(label string) string {
 
 func TextInput(label string) string {
 	prompt := promptui.Prompt{
-		Label: label,
+		Label: promptui.Styler(promptui.FGYellow)(label),
 		Validate: func(input string) error {
 			if len(strings.TrimSpace(input)) == 0 {
 				return fmt.Errorf("Please input a valid value")
@@ -43,10 +43,10 @@ func TextInput(label string) string {
 			return nil
 		},
 		Templates: &promptui.PromptTemplates{
-			Prompt:          promptui.Styler(promptui.FGCyan)("➜ {{ . }} "),
+			Prompt:          promptui.Styler(promptui.FGCyan)("➤ {{ . }} "),
 			ValidationError: promptui.Styler(promptui.FGRed)("✗ {{ . }}"),
-			Success:         promptui.Styler(promptui.FGFaint)("✔ Typed: "),
 		},
+		HideEntered: true,
 	}
 	result, err := prompt.Run()
 	if err != nil {
@@ -60,7 +60,8 @@ func TextInput(label string) string {
 func ContextSelection(label string, config *clientcmdapi.Config) string {
 	ctxs := kubeconfig.Contexts(config)
 	ctxs = append(ctxs, &types.ContextProfile{
-		Name: "✗ Exit",
+		Name:  "Exit",
+		Emoji: "✗",
 	})
 	cursorPos := 0
 	for i, ctx := range ctxs {
@@ -70,17 +71,16 @@ func ContextSelection(label string, config *clientcmdapi.Config) string {
 	}
 
 	templates := &promptui.SelectTemplates{
-		Label:    "# {{ . }}:",
-		Active:   promptui.Styler(promptui.FGCyan, promptui.FGUnderline)("➜  {{if .Current}}{{ \"✔ \" }}{{end}}{{ .Name }}"),
-		Inactive: promptui.Styler(promptui.FGFaint)("  {{if .Current}}{{ \"✔ \" }}{{end}}{{ .Name }}"),
-		Selected: promptui.Styler(promptui.FGFaint)("✔ Selected: {{ .Name }}"),
-		Details: `
+		Label:    promptui.Styler(promptui.FGYellow)("# {{ . }}:"),
+		Active:   promptui.Styler(promptui.FGCyan, promptui.FGUnderline)("➤ {{ .Emoji }} {{ .Name }}"),
+		Inactive: promptui.Styler(promptui.FGFaint)("  {{ .Emoji }} {{ .Name }}"),
+		Details: `{{if .Cluster}}
 ---------- Context ----------
 {{ "Name:" | faint }}	{{ .Name }}
 {{ "Namespace:" | faint }}	{{ .Namespace }}
 {{ "Cluster:" | faint }}	{{ .Cluster }}
 {{ "User:" | faint }}	{{ .User }}
-{{ "Server:" | faint }}	{{ .Server }}`,
+{{ "Server:" | faint }}	{{ .Server }}{{end}}`,
 	}
 
 	prompt := promptui.Select{
@@ -99,8 +99,9 @@ func ContextSelection(label string, config *clientcmdapi.Config) string {
 
 			return false
 		},
-		CursorPos: cursorPos,
-		Templates: templates,
+		HideSelected: true,
+		CursorPos:    cursorPos,
+		Templates:    templates,
 	}
 
 	index, _, err := prompt.Run()

@@ -9,7 +9,6 @@ import (
 	"github.com/poneding/ktx/internal/kubeconfig"
 	"github.com/poneding/ktx/internal/output"
 	"github.com/poneding/ktx/internal/prompt"
-	"github.com/poneding/ktx/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -60,7 +59,7 @@ func completeWithContextProfile(cmd *cobra.Command, args []string, toComplete st
 
 	var completions []string
 	for _, context := range current {
-		completions = append(completions, fmt.Sprintf("%s\t[%s] %s - %s", context.Name, util.If(context.Current, "✔", " "), context.Namespace, context.Server))
+		completions = append(completions, fmt.Sprintf("%s\t[%s] %s - %s", context.Name, context.Emoji, context.Namespace, context.Server))
 	}
 
 	return completions, cobra.ShellCompDirectiveNoSpace | cobra.ShellCompDirectiveNoFileComp

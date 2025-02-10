@@ -52,7 +52,7 @@ func removeContext(config *api.Config, dst string) {
 		output.Fatal("Context <%s> not found.", dst)
 	}
 
-	if prompt.YesNo(fmt.Sprintf("Are you sure you want to remove context %s?", dst)) != "Yes" {
+	if prompt.YesNo(fmt.Sprintf("Are you sure you want to remove context %s", dst)) != "Yes" {
 		return
 	}
 

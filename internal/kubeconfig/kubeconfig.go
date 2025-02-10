@@ -2,6 +2,7 @@ package kubeconfig
 
 import (
 	"os"
+	"sort"
 
 	"github.com/poneding/ktx/internal/output"
 	"github.com/poneding/ktx/internal/types"
@@ -64,15 +65,21 @@ func CheckOrInit() {
 func Contexts(config *clientcmdapi.Config) []*types.ContextProfile {
 	var contexts []*types.ContextProfile
 	for contextName, context := range config.Contexts {
-		contexts = append(contexts, &types.ContextProfile{
+		item := &types.ContextProfile{
 			Current:   contextName == config.CurrentContext,
 			Name:      contextName,
 			Cluster:   context.Cluster,
 			User:      context.AuthInfo,
 			Namespace: util.If(context.Namespace != "", context.Namespace, "default"),
 			Server:    config.Clusters[context.Cluster].Server,
-		})
+		}
+		item.Emoji = util.If(item.Current, "✦", " ")
+		contexts = append(contexts, item)
 	}
+
+	sort.Slice(contexts, func(i, j int) bool {
+		return contexts[i].Name < contexts[j].Name
+	})
 
 	return contexts
 }

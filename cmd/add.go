@@ -68,7 +68,7 @@ func merge(curr, new *clientcmdapi.Config) {
 		// 如果 context 名称已经存在，要求用户输入新的 context 名称
 		var quitWithConflict bool
 		for contextNameConflict(newCtxName, curr) {
-			if prompt.YesNo(fmt.Sprintf("Context name <%s> already exists, rename it?", newCtxName)) == "Yes" {
+			if prompt.YesNo(fmt.Sprintf("Context name <%s> already exists, rename it", newCtxName)) == "Yes" {
 				newCtxName = prompt.TextInput("Enter a new name")
 			} else {
 				quitWithConflict = true

@@ -7,4 +7,5 @@ type ContextProfile struct {
 	User      string
 	Server    string
 	Namespace string
+	Emoji     string
 }

@@ -61,16 +61,14 @@ func listContexts(ctxs []*types.ContextProfile) {
 }
 
 func appendRow(t table.Writer, ctx *types.ContextProfile) {
-	var flag string
 	if ctx.Current {
 		ctx.Name = color.CyanString(ctx.Name)
 		ctx.Namespace = color.CyanString(ctx.Namespace)
 		ctx.Cluster = color.CyanString(ctx.Cluster)
 		ctx.User = color.CyanString(ctx.User)
 		ctx.Server = color.CyanString(ctx.Server)
-		flag = color.CyanString("✔")
 	}
-	t.AppendRow(table.Row{flag, ctx.Name, ctx.Namespace, ctx.Cluster, ctx.User, ctx.Server}, table.RowConfig{
+	t.AppendRow(table.Row{ctx.Emoji, ctx.Name, ctx.Namespace, ctx.Cluster, ctx.User, ctx.Server}, table.RowConfig{
 		AutoMerge: true,
 	})
 }
