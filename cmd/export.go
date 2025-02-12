@@ -23,7 +23,7 @@ var exportCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		runExport(args)
 	},
-	ValidArgsFunction: completeWithContextProfile,
+	ValidArgsFunction: completeWithContextProfiles,
 }
 
 func init() {

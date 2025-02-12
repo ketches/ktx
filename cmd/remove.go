@@ -26,7 +26,7 @@ var removeCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		runRemove(args)
 	},
-	ValidArgsFunction: completeWithContextProfile,
+	ValidArgsFunction: completeWithContextProfiles,
 }
 
 func init() {
