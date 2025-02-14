@@ -50,7 +50,7 @@ func CheckOrInit() {
 	kubeconfigFile := File()
 
 	if _, err := os.Stat(kubeconfigFile); os.IsNotExist(err) {
-		if err := os.MkdirAll(kubeconfigDir, 600); err != nil {
+		if err := os.MkdirAll(kubeconfigDir, 0700); err != nil {
 			output.Fatal("Failed to create %s directory: %s", kubeconfigDir, err)
 		}
 
