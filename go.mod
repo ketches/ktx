@@ -4,7 +4,7 @@ go 1.23.3
 
 require (
 	github.com/fatih/color v1.18.0
-	github.com/jedib0t/go-pretty/v6 v6.6.5
+	github.com/jedib0t/go-pretty/v6 v6.6.6
 	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.8.1
 	k8s.io/apimachinery v0.32.1
