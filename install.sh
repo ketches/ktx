@@ -46,7 +46,7 @@ rm -rf "$TMP_DIR"
 
 if command -v $BINARY_NAME >/dev/null; then
     echo "Successfully installed $BINARY_NAME to $INSTALL_DIR"
-    echo "Version: $($BINARY_NAME --version 2>/dev/null || echo 'version check not supported')"
+    echo "$($BINARY_NAME version 2>/dev/null || echo 'version check not supported')"
 else
     echo "Installation completed but binary not found in PATH"
     exit 1
