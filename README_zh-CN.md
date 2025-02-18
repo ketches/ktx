@@ -1,5 +1,7 @@
 # ktx
 
+[English](README.md) | 中文
+
 ktx 是一个针对 Kubernetes 多集群上下文管理的命令行工具，简单易用。
 
 ## 安装
@@ -20,7 +22,7 @@ curl -sSL https://github.com/poneding/ktx/raw/master/install.sh | sh
 
 对于 Windows：
 
-从 [releases](https://github.com/poneding/ktx/releases/latest) 下载最新版本可执行文件并将其添加到 PATH。
+从 [Releases](https://github.com/poneding/ktx/releases/latest) 下载最新版本可执行文件并将其添加到 PATH。
 
 ## 使用
 
