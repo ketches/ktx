@@ -9,44 +9,44 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type genFlags struct {
+type generateFlags struct {
 	namespace      string
 	serviceAccount string
 	output         string
 }
 
-var genFlag genFlags
+var generateFlag generateFlags
 
-// genCmd represents the gen command
-var genCmd = &cobra.Command{
+// generateCmd represents the gen command
+var generateCmd = &cobra.Command{
 	Use:     "generate",
 	Aliases: []string{"gen"},
 	Short:   "Generate a new context from ServiceAccount",
 	Long:    `Generate a new context from ServiceAccount.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		runGen()
+		runGenerate()
 	},
 	ValidArgsFunction: completion.None,
 }
 
 func init() {
-	rootCmd.AddCommand(genCmd)
+	rootCmd.AddCommand(generateCmd)
 
-	genCmd.Flags().StringVarP(&genFlag.namespace, "namespace", "n", "default", "Namespace")
-	genCmd.Flags().StringVar(&genFlag.serviceAccount, "service-account", "", "ServiceAccount")
-	genCmd.Flags().StringVarP(&genFlag.output, "output", "o", "", "Output kube config file")
+	generateCmd.Flags().StringVarP(&generateFlag.namespace, "namespace", "n", "default", "Namespace")
+	generateCmd.Flags().StringVar(&generateFlag.serviceAccount, "service-account", "", "ServiceAccount")
+	generateCmd.Flags().StringVarP(&generateFlag.output, "output", "o", "", "Output kube config file")
 
-	genCmd.RegisterFlagCompletionFunc("namespace", completion.Namespace)
-	genCmd.RegisterFlagCompletionFunc("service-account", completion.ServiceAccount)
+	generateCmd.RegisterFlagCompletionFunc("namespace", completion.Namespace)
+	generateCmd.RegisterFlagCompletionFunc("service-account", completion.ServiceAccount)
 
-	genCmd.MarkFlagRequired("service-account")
+	generateCmd.MarkFlagRequired("service-account")
 }
 
-func runGen() {
-	config := kubeconfig.GenerateConfigForServiceAccount(genFlag.serviceAccount, genFlag.namespace)
-	if genFlag.output == "" {
+func runGenerate() {
+	config := kubeconfig.GenerateConfigForServiceAccount(generateFlag.serviceAccount, generateFlag.namespace)
+	if generateFlag.output == "" {
 		kubeconfig.PrintConfig(config)
 	} else {
-		kubeconfig.SaveConfigToFile(config, genFlag.output)
+		kubeconfig.SaveConfigToFile(config, generateFlag.output)
 	}
 }

@@ -74,10 +74,10 @@ func exportContext(config *clientcmdapi.Config, dsts []string) {
 		dstConfig.CurrentContext = dsts[0]
 	}
 
-	if genFlag.output == "" {
+	if exportFlag.output == "" {
 		kubeconfig.PrintConfig(dstConfig)
 	} else {
-		kubeconfig.SaveConfigToFile(config, genFlag.output)
-		output.Done("Context exported to %s.", genFlag.output)
+		kubeconfig.SaveConfigToFile(config, exportFlag.output)
+		output.Done("Context exported to %s.", exportFlag.output)
 	}
 }
