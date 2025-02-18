@@ -13,9 +13,10 @@ const VERSION = "v0.2.1"
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version number of ktx",
-	Long:  `Print the version number of ktx`,
+	Use:     "version",
+	Aliases: []string{"v"},
+	Short:   "Print the version number of ktx",
+	Long:    `Print the version number of ktx`,
 	Run: func(cmd *cobra.Command, args []string) {
 		output.Done("Version: %s", VERSION)
 	},
