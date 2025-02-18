@@ -1,6 +1,6 @@
 # ktx
 
-[English](README.md) | 中文
+[English](README.md) | 简体中文
 
 ktx 是一个针对 Kubernetes 多集群上下文管理的命令行工具，简单易用。
 

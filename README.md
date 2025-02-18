@@ -1,6 +1,6 @@
 # ktx
 
-English | [中文](README_zh-CN.md)
+English | [简体中文](README_zh-CN.md)
 
 ktx is an easy-to-use command line tool for kubernetes multi-cluster context management.
 
