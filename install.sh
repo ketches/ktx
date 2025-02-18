@@ -26,7 +26,7 @@ DOWNLOAD_URL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download/v$LATE
 
 TMP_DIR=$(mktemp -d)
 
-echo "Installing $BINARY_NAME $LATEST_VERSION ($OS/$ARCH)"
+echo "Installing $BINARY_NAME v$LATEST_VERSION ($OS/$ARCH)"
 echo "Downloading from: $DOWNLOAD_URL"
 
 curl -L $DOWNLOAD_URL -o "$TMP_DIR/$BINARY_NAME" || {
