@@ -15,7 +15,7 @@ case $ARCH in
     *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
 esac
 
-LATEST_VERSION=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest" | jq -r .tag_name | sed 's/^v//')
+LATEST_VERSION=$(basename $(curl -s -w %{redirect_url} https://github.com/$REPO_OWNER/$REPO_NAME/releases/latest) | sed 's/^v//')
 
 if [ -z "$LATEST_VERSION" ]; then
     echo "Failed to get latest version"
