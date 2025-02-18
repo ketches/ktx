@@ -8,7 +8,8 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/poneding/ktx/internal/kubeconfig"
+	completion "github.com/poneding/ktx/internal/completion"
+	"github.com/poneding/ktx/internal/kube"
 	"github.com/poneding/ktx/internal/output"
 	"github.com/poneding/ktx/internal/prompt"
 	"github.com/poneding/ktx/internal/types"
@@ -19,11 +20,12 @@ import (
 var listCmd = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
-	Short:   "list contexts in ~/.kube/config",
-	Long:    `list contexts in ~/.kube/config`,
+	Short:   "List contexts in ~/.kube/config",
+	Long:    `List contexts in ~/.kube/config`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runList()
 	},
+	ValidArgsFunction: completion.None,
 }
 
 func init() {
@@ -31,8 +33,8 @@ func init() {
 }
 
 func runList() {
-	config := kubeconfig.Load()
-	ctxs := kubeconfig.Contexts(config)
+	config := kube.LoadConfigFromFile(rootFlag.kubeconfig)
+	ctxs := kube.ListContexts(config)
 
 	if len(ctxs) == 0 {
 		output.Note("No context found.")
@@ -43,8 +45,8 @@ func runList() {
 
 	// 如果当前没有 context，那么提示用户选择一个 context
 	if config.CurrentContext == "" {
-		config.CurrentContext = prompt.ContextSelection("Select context to use", config)
-		kubeconfig.Save(config)
+		config.CurrentContext = prompt.ContextSelection("Select a context as current", config)
+		kube.SaveConfigToFile(config, rootFlag.kubeconfig)
 	}
 }
 

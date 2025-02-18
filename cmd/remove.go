@@ -6,7 +6,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/poneding/ktx/internal/kubeconfig"
+	"github.com/poneding/ktx/internal/completion"
+	"github.com/poneding/ktx/internal/kube"
 	"github.com/poneding/ktx/internal/output"
 	"github.com/poneding/ktx/internal/prompt"
 	"github.com/spf13/cobra"
@@ -21,12 +22,12 @@ var (
 var removeCmd = &cobra.Command{
 	Use:     "remove",
 	Aliases: []string{"rm"},
-	Short:   "remove context from ~/.kube/config",
-	Long:    `remove context from ~/.kube/config`,
+	Short:   "Remove context(s) from specified kubeconfig(~/.kube/config by default)",
+	Long:    `Remove context(s) from specified kubeconfig(~/.kube/config by default)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runRemove(args)
 	},
-	ValidArgsFunction: completeWithContextProfiles,
+	ValidArgsFunction: completion.ContextArray,
 }
 
 func init() {
@@ -34,7 +35,7 @@ func init() {
 }
 
 func runRemove(args []string) {
-	config := kubeconfig.Load()
+	config := kube.LoadConfigFromFile(rootFlag.kubeconfig)
 
 	dsts := args
 	if len(dsts) == 0 {
@@ -82,16 +83,16 @@ func removeContext(config *api.Config, dst string) {
 		config.CurrentContext = ""
 	}
 
-	kubeconfig.Save(config)
+	kube.SaveConfigToFile(config, rootFlag.kubeconfig)
 	output.Done("Context <%s> removed.", dst)
 
 	// 如果当前没有 context，那么提示用户选择一个 context
 	if len(config.Contexts) > 0 && config.CurrentContext == "" {
 		if len(config.Contexts) > 0 {
-			new := prompt.ContextSelection("Remove current context, select another one", config)
+			new := prompt.ContextSelection("Select a context as current", config)
 			config.CurrentContext = new
-			kubeconfig.Save(config)
-			output.Done("Context <%s> is now in use.", new)
+			kube.SaveConfigToFile(config, rootFlag.kubeconfig)
+			output.Done("Switched to context <%s>.", new)
 		}
 	}
 }

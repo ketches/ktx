@@ -4,9 +4,23 @@ ktx is an easy-to-use command line tool for kubernetes multi-cluster context man
 
 ## Installation
 
+- Install with `go install`
+
 ```bash
 go install -u github.com/poneding/ktx@latest
 ```
+
+- Install from binary
+
+For MacOS or Linux:
+
+```bash
+curl -sSL https://github.com/poneding/ktx/raw/master/install.sh | sh
+```
+
+For Windows:
+
+Download the lastest executable from [releases](https://github.com/poneding/ktx/releases/latest) and add it to the PATH.
 
 ## Usage
 
@@ -23,15 +37,19 @@ ktx add -f .kube/kind-cluster-02
 ktx list
 ```
 
+Alias: `ktx ls`
+
 3. Switch cluster context
 
 ```bash
 # Switch to specified cluster context
-ktx use kind-cluster-01
+ktx switch kind-cluster-01
 
 # Interactive switch
-ktx use
+ktx switch
 ```
+
+Alias: `ktx s`
 
 4. Rename cluster context
 
@@ -47,14 +65,24 @@ ktx rename
 
 ```bash
 # Remove specified cluster context
-ktx rm kind-cluster-01
+ktx remove kind-cluster-01
 
 # Interactive remove
-ktx rm
+ktx remove
 ```
+
+Alias: `ktx rm`
 
 6. Export cluster context
 
 ```bash
 ktx export kind-cluster-01 -f .kube/export-01
 ```
+
+7. Generate kubeconfig from ServiceAccount
+
+```bash
+ktx generate --service-account default -f .kube/my-gen-config
+```
+
+Alias: `ktx gen`

@@ -4,38 +4,40 @@ Copyright © 2025 Pone Ding <poneding@gmail.com>
 package cmd
 
 import (
-	"github.com/poneding/ktx/internal/kubeconfig"
+	completion "github.com/poneding/ktx/internal/completion"
+	"github.com/poneding/ktx/internal/kube"
+	kubeconfig "github.com/poneding/ktx/internal/kube"
 	"github.com/poneding/ktx/internal/output"
 	"github.com/poneding/ktx/internal/prompt"
 	"github.com/spf13/cobra"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-var (
-	exportFile string
-)
+type exportFlags struct {
+	output string
+}
+
+var exportFlag exportFlags
 
 // exportCmd represents the export command
 var exportCmd = &cobra.Command{
 	Use:   "export",
-	Short: "export context to kubeconfig file from ~/.kube/config",
-	Long:  `export context to kubeconfig file from ~/.kube/config`,
+	Short: "Export context(s) from specified kubeconfig(~/.kube/config by default)",
+	Long:  `Export context(s) from specified kubeconfig(~/.kube/config by default)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runExport(args)
 	},
-	ValidArgsFunction: completeWithContextProfiles,
+	ValidArgsFunction: completion.ContextArray,
 }
 
 func init() {
 	rootCmd.AddCommand(exportCmd)
 
-	exportCmd.Flags().StringVarP(&exportFile, "file", "f", "", "kubeconfig file")
-
-	exportCmd.MarkFlagRequired("file")
+	exportCmd.Flags().StringVarP(&exportFlag.output, "output", "o", "", "Output kube config file")
 }
 
 func runExport(args []string) {
-	config := kubeconfig.Load()
+	config := kube.LoadConfigFromFile(rootFlag.kubeconfig)
 
 	dsts := args
 	if len(dsts) == 0 {
@@ -67,19 +69,15 @@ func exportContext(config *clientcmdapi.Config, dsts []string) {
 		dstConfig.AuthInfos[dstCtx.AuthInfo] = dstUser
 	}
 
-	// 如果只有一个 context，那么设置为当前 context
-	if len(dstConfig.Contexts) == 1 {
+	// 设置当前上下文，默认第一个
+	if len(dstConfig.Contexts) > 0 {
 		dstConfig.CurrentContext = dsts[0]
 	}
 
-	kubeconfig.SaveToFile(dstConfig, exportFile)
-	output.Done("Context exported to %s.", exportFile)
-
-	// 如果导出的 kubeconfig 文件没有 current context，那么提示用户选择一个 current context
-	if dstConfig.CurrentContext == "" {
-		currentCtx := prompt.ContextSelection("Select current context fro exported file", dstConfig)
-		dstConfig.CurrentContext = currentCtx
-		kubeconfig.SaveToFile(dstConfig, exportFile)
-		output.Done("Current context set to %s for exported file %s.", currentCtx, exportFile)
+	if genFlag.output == "" {
+		kubeconfig.PrintConfig(dstConfig)
+	} else {
+		kubeconfig.SaveConfigToFile(config, genFlag.output)
+		output.Done("Context exported to %s.", genFlag.output)
 	}
 }

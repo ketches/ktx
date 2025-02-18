@@ -4,13 +4,17 @@ Copyright © 2025 Pone Ding <poneding@gmail.com>
 package cmd
 
 import (
-	"fmt"
 	"os"
-	"slices"
 
-	"github.com/poneding/ktx/internal/kubeconfig"
+	"github.com/poneding/ktx/internal/kube"
 	"github.com/spf13/cobra"
 )
+
+type rootFlags struct {
+	kubeconfig string
+}
+
+var rootFlag rootFlags
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -31,30 +35,8 @@ func Execute() {
 	}
 }
 
-func completeWithContextProfile(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if len(args) > 0 {
-		return nil, cobra.ShellCompDirectiveNoSpace | cobra.ShellCompDirectiveNoFileComp
-	}
+func init() {
+	// rootCmd.Flags().StringVar(&rootFlag.kubeconfig, "kubeconfig", kube.DefaultConfigFile, "kubeconfig file")
 
-	current := kubeconfig.Contexts(kubeconfig.Load())
-	var completions []string
-	for _, context := range current {
-		completions = append(completions, fmt.Sprintf("%s\t[%s] %s - %s", context.Name, context.Emoji, context.Namespace, context.Server))
-	}
-
-	return completions, cobra.ShellCompDirectiveNoSpace | cobra.ShellCompDirectiveNoFileComp
-}
-
-func completeWithContextProfiles(_cmd *cobra.Command, args []string, _toComplete string) ([]string, cobra.ShellCompDirective) {
-	current := kubeconfig.Contexts(kubeconfig.Load())
-
-	var completions []string
-	for _, context := range current {
-		if slices.Contains(args, context.Name) {
-			continue
-		}
-		completions = append(completions, fmt.Sprintf("%s\t[%s] %s - %s", context.Name, context.Emoji, context.Namespace, context.Server))
-	}
-
-	return completions, cobra.ShellCompDirectiveNoSpace | cobra.ShellCompDirectiveNoFileComp
+	rootCmd.PersistentFlags().StringVar(&rootFlag.kubeconfig, "kubeconfig", kube.DefaultConfigFile, "kubeconfig file")
 }

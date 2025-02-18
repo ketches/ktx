@@ -8,7 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/poneding/ktx/internal/kubeconfig"
+	completion "github.com/poneding/ktx/internal/completion"
+	"github.com/poneding/ktx/internal/kube"
 	"github.com/poneding/ktx/internal/output"
 	"github.com/poneding/ktx/internal/prompt"
 	"github.com/poneding/ktx/internal/util"
@@ -24,11 +25,12 @@ var (
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: "add context from kubeconfig file to ~/.kube/config",
-	Long:  `add context from kubeconfig file to ~/.kube/config`,
+	Short: "Add context from kubeconfig file to ~/.kube/config",
+	Long:  `Add context from kubeconfig file to ~/.kube/config`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runAdd()
 	},
+	ValidArgsFunction: completion.None,
 }
 
 func init() {
@@ -40,13 +42,13 @@ func init() {
 }
 
 func runAdd() {
-	config := kubeconfig.Load()
+	config := kube.LoadConfigFromFile(rootFlag.kubeconfig)
 
 	if !util.IsFileExist(addFile) {
 		output.Fatal("File %s not found.", addFile)
 	}
 
-	new := kubeconfig.LoadFromFile(addFile)
+	new := kube.LoadConfigFromFile(addFile)
 
 	merge(config, new)
 }
@@ -93,12 +95,12 @@ func merge(curr, new *clientcmdapi.Config) {
 		handleMerge(curr, mf)
 	}
 
-	kubeconfig.Save(curr)
+	kube.SaveConfigToFile(curr, rootFlag.kubeconfig)
 
 	// 如果当前没有 context，那么提示用户选择一个 context
 	if curr.CurrentContext == "" {
-		curr.CurrentContext = prompt.ContextSelection("Select context to use", curr)
-		kubeconfig.Save(curr)
+		curr.CurrentContext = prompt.ContextSelection("Select a context to as current", curr)
+		kube.SaveConfigToFile(curr, rootFlag.kubeconfig)
 	}
 }
 

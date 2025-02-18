@@ -6,15 +6,16 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
-	"github.com/poneding/ktx/internal/kubeconfig"
+	"github.com/poneding/ktx/internal/kube"
 	"github.com/poneding/ktx/internal/output"
 	"github.com/poneding/ktx/internal/types"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
+// YesNo prompts the user to select Yes or No
 func YesNo(label string) string {
 	templates := &promptui.SelectTemplates{
-		Label:    promptui.Styler(promptui.FGYellow)("# {{ . }}?"),
+		Label:    promptui.Styler(promptui.FGYellow)("❖ {{ . }}?"),
 		Active:   promptui.Styler(promptui.FGCyan, promptui.FGUnderline)("➤ {{ . }}"),
 		Inactive: promptui.Styler(promptui.FGFaint)("  {{ . }}"),
 	}
@@ -33,6 +34,7 @@ func YesNo(label string) string {
 	return obj
 }
 
+// TextInput prompts the user to input a value
 func TextInput(label string) string {
 	prompt := promptui.Prompt{
 		Label: promptui.Styler(promptui.FGYellow)(label),
@@ -57,8 +59,9 @@ func TextInput(label string) string {
 	return result
 }
 
+// ContextSelection prompts the user to select a context
 func ContextSelection(label string, config *clientcmdapi.Config) string {
-	ctxs := kubeconfig.Contexts(config)
+	ctxs := kube.ListContexts(config)
 	ctxs = append(ctxs, &types.ContextProfile{
 		Name:  "Exit",
 		Emoji: "✗",
@@ -71,7 +74,7 @@ func ContextSelection(label string, config *clientcmdapi.Config) string {
 	}
 
 	templates := &promptui.SelectTemplates{
-		Label:    promptui.Styler(promptui.FGYellow)("# {{ . }}:"),
+		Label:    promptui.Styler(promptui.FGYellow)("❖ {{ . }}:"),
 		Active:   promptui.Styler(promptui.FGCyan, promptui.FGUnderline)("➤ {{ .Emoji }} {{ .Name }}"),
 		Inactive: promptui.Styler(promptui.FGFaint)("  {{ .Emoji }} {{ .Name }}"),
 		Details: `{{if .Cluster}}
