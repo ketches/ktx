@@ -4,6 +4,8 @@ English | [简体中文](README_zh-CN.md)
 
 ktx is an easy-to-use command line tool for kubernetes multi-cluster context management.
 
+![demo](docs/images/demo.gif)
+
 ## Installation
 
 - Install with `go install`
@@ -25,6 +27,8 @@ For Windows:
 Download the lastest executable from [Releases](https://github.com/poneding/ktx/releases/latest) and add it to the PATH.
 
 ## Usage
+
+![usage](docs/images/usage.png)
 
 1. Add cluster context
 

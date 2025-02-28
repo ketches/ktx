@@ -4,6 +4,8 @@
 
 ktx 是一个针对 Kubernetes 多集群上下文管理的命令行工具，简单易用。
 
+![demo](docs/images/demo.gif)
+
 ## 安装
 
 - 通过 `go install` 安装
@@ -25,6 +27,8 @@ curl -sSL https://github.com/poneding/ktx/raw/master/install.sh | sh
 从 [Releases](https://github.com/poneding/ktx/releases/latest) 下载最新版本可执行文件并将其添加到 PATH。
 
 ## 使用
+
+![usage](docs/images/usage.png)
 
 1. 添加集群上下文
 
