@@ -6,7 +6,6 @@ package cmd
 import (
 	completion "github.com/poneding/ktx/internal/completion"
 	"github.com/poneding/ktx/internal/kube"
-	kubeconfig "github.com/poneding/ktx/internal/kube"
 	"github.com/poneding/ktx/internal/output"
 	"github.com/poneding/ktx/internal/prompt"
 	"github.com/spf13/cobra"
@@ -75,9 +74,9 @@ func exportContext(config *clientcmdapi.Config, dsts []string) {
 	}
 
 	if exportFlag.output == "" {
-		kubeconfig.PrintConfig(dstConfig)
+		kube.PrintConfig(dstConfig)
 	} else {
-		kubeconfig.SaveConfigToFile(config, exportFlag.output)
+		kube.SaveConfigToFile(dstConfig, exportFlag.output)
 		output.Done("Context exported to %s.", exportFlag.output)
 	}
 }
