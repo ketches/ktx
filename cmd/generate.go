@@ -5,7 +5,7 @@ package cmd
 
 import (
 	"github.com/poneding/ktx/internal/completion"
-	kubeconfig "github.com/poneding/ktx/internal/kube"
+	"github.com/poneding/ktx/internal/kube"
 	"github.com/spf13/cobra"
 )
 
@@ -43,10 +43,10 @@ func init() {
 }
 
 func runGenerate() {
-	config := kubeconfig.GenerateConfigForServiceAccount(generateFlag.serviceAccount, generateFlag.namespace)
+	config := kube.GenerateConfigForServiceAccount(rootFlag.kubeconfig, generateFlag.serviceAccount, generateFlag.namespace)
 	if generateFlag.output == "" {
-		kubeconfig.PrintConfig(config)
+		kube.PrintConfig(config)
 	} else {
-		kubeconfig.SaveConfigToFile(config, generateFlag.output)
+		kube.SaveConfigToFile(config, generateFlag.output)
 	}
 }
