@@ -49,7 +49,7 @@ func Namespace(cmd *cobra.Command, args []string, toComplete string) ([]string, 
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	kubeClientset := kube.Client(kube.DefaultConfigFile)
+	kubeClientset := kube.Client(cmd.Flag("kubeconfig").Value.String())
 
 	return kube.ListNamespaces(kubeClientset), cobra.ShellCompDirectiveNoFileComp
 }
@@ -60,7 +60,7 @@ func ServiceAccount(cmd *cobra.Command, args []string, toComplete string) ([]str
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	kubeClientset := kube.Client(kube.DefaultConfigFile)
+	kubeClientset := kube.Client(cmd.Flag("kubeconfig").Value.String())
 
 	return kube.ListServiceAccounts(kubeClientset, cmd.Flag("namespace").Value.String()), cobra.ShellCompDirectiveNoFileComp
 }

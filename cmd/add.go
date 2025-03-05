@@ -4,8 +4,6 @@ Copyright © 2025 Pone Ding <poneding@gmail.com>
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 
 	completion "github.com/poneding/ktx/internal/completion"
@@ -14,7 +12,6 @@ import (
 	"github.com/poneding/ktx/internal/prompt"
 	"github.com/poneding/ktx/internal/util"
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/util/rand"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
@@ -42,18 +39,20 @@ func init() {
 }
 
 func runAdd() {
-	config := kube.LoadConfigFromFile(rootFlag.kubeconfig)
-
 	if !util.IsFileExist(addFile) {
 		output.Fatal("File %s not found.", addFile)
 	}
 
+	config := kube.LoadConfigFromFile(rootFlag.kubeconfig)
+	kube.StandardizeConfig(config)
+
 	new := kube.LoadConfigFromFile(addFile)
+	kube.StandardizeConfig(new)
 
 	merge(config, new)
 }
 
-func merge(curr, new *clientcmdapi.Config) {
+func merge(config, new *clientcmdapi.Config) {
 	for newCtxName, newCtx := range new.Contexts {
 		newCluster, ok := new.Clusters[newCtx.Cluster]
 		if !ok {
@@ -69,9 +68,11 @@ func merge(curr, new *clientcmdapi.Config) {
 
 		// 如果 context 名称已经存在，要求用户输入新的 context 名称
 		var quitWithConflict bool
-		for contextNameConflict(newCtxName, curr) {
-			if prompt.YesNo(fmt.Sprintf("Context name <%s> already exists, rename it", newCtxName)) == "Yes" {
-				newCtxName = prompt.TextInput("Enter a new name")
+		for contextNameConflict(newCtxName, config) {
+			if prompt.YesNo(fmt.Sprintf("Context name <%s> already exists, rename it", newCtxName)) {
+				newCtxName = prompt.TextInput("Enter a new context name", newCtxName)
+				newCtx.Cluster = "cluster-" + newCtxName
+				newCtx.AuthInfo = "user-" + newCtxName
 			} else {
 				quitWithConflict = true
 				break
@@ -83,24 +84,30 @@ func merge(curr, new *clientcmdapi.Config) {
 		}
 
 		mf := &mergeFrom{
-			contextName:  newCtxName,
-			clusterName:  newCtx.Cluster,
-			userName:     newCtx.AuthInfo,
-			context:      newCtx,
-			cluster:      newCluster,
-			user:         newUser,
-			uniqueSuffix: rand.String(5),
+			contextName: newCtxName,
+			clusterName: newCtx.Cluster,
+			userName:    newCtx.AuthInfo,
+			context:     newCtx,
+			cluster:     newCluster,
+			user:        newUser,
 		}
 
-		handleMerge(curr, mf)
+		handleMerge(config, mf)
 	}
 
-	kube.SaveConfigToFile(curr, rootFlag.kubeconfig)
+	kube.SaveConfigToFile(config, rootFlag.kubeconfig)
 
 	// 如果当前没有 context，那么提示用户选择一个 context
-	if curr.CurrentContext == "" {
-		curr.CurrentContext = prompt.ContextSelection("Select a context to as current", curr)
-		kube.SaveConfigToFile(curr, rootFlag.kubeconfig)
+	if config.CurrentContext == "" && len(config.Contexts) > 0 {
+		if len(config.Contexts) == 1 {
+			for ctxName := range config.Contexts {
+				config.CurrentContext = ctxName
+				break
+			}
+		} else {
+			config.CurrentContext = prompt.ContextSelection("Select a context to as current", config)
+		}
+		kube.SaveConfigToFile(config, rootFlag.kubeconfig)
 	}
 }
 
@@ -109,60 +116,18 @@ type mergeFrom struct {
 	context                            *clientcmdapi.Context
 	cluster                            *clientcmdapi.Cluster
 	user                               *clientcmdapi.AuthInfo
-	uniqueSuffix                       string
 }
 
-func handleMerge(current *clientcmdapi.Config, mf *mergeFrom) {
-	// merge cluster
-	var clusterExist, userExist bool
-	for clusterName, cluster := range current.Clusters {
-		if marshalEqual(cluster, mf.cluster) {
-			clusterExist = true
-			// 存在相同的 cluster，不需要添加
-			output.Note("Cluster %s already exists, skipped.", mf.clusterName)
-			mf.clusterName = clusterName
-			mf.context.Cluster = clusterName
-			break
-		}
-	}
-	if !clusterExist {
-		if _, ok := current.Clusters[mf.clusterName]; ok {
-			// cluster 名称冲突，需要重新命名
-			mf.clusterName = fmt.Sprintf("%s-%s", mf.clusterName, mf.uniqueSuffix)
-		}
-		mf.context.Cluster = mf.clusterName
-		current.Clusters[mf.clusterName] = mf.cluster
+func handleMerge(config *clientcmdapi.Config, mf *mergeFrom) {
+	for contextNameConflict(mf.contextName, config) {
+		mf.contextName = prompt.TextInput(fmt.Sprintf("Context name <%s> already exists, enter a new name", mf.contextName), mf.contextName)
+		mf.clusterName = "cluster-" + mf.contextName
+		mf.userName = "user-" + mf.contextName
 	}
 
-	if _, ok := current.Clusters[mf.clusterName]; !ok {
-		current.Clusters[mf.clusterName] = mf.cluster
-	}
-
-	// merge user
-	for userName, user := range current.AuthInfos {
-		if marshalEqual(user, mf.user) {
-			userExist = true
-			// 存在相同的 user，不需要添加
-			output.Note("User %s already exists, skipped.", mf.userName)
-			mf.userName = userName
-			mf.context.AuthInfo = userName
-			break
-		}
-	}
-	if !userExist {
-		if _, ok := current.AuthInfos[mf.userName]; ok {
-			// auth info 名称冲突，需要重新命名
-			mf.userName = fmt.Sprintf("%s-%s", mf.userName, mf.uniqueSuffix)
-		}
-		mf.context.AuthInfo = mf.userName
-		current.AuthInfos[mf.userName] = mf.user
-	}
-	if _, ok := current.AuthInfos[mf.userName]; !ok {
-		current.AuthInfos[mf.userName] = mf.user
-	}
-
-	// merge context
-	current.Contexts[mf.contextName] = mf.context
+	config.Clusters[mf.clusterName] = mf.cluster
+	config.AuthInfos[mf.userName] = mf.user
+	config.Contexts[mf.contextName] = mf.context
 
 	output.Done("Context <%s> added.", mf.contextName)
 }
@@ -170,10 +135,4 @@ func handleMerge(current *clientcmdapi.Config, mf *mergeFrom) {
 func contextNameConflict(name string, config *clientcmdapi.Config) bool {
 	_, ok := config.Contexts[name]
 	return ok
-}
-
-func marshalEqual(a, b any) bool {
-	ab, _ := json.Marshal(a)
-	bb, _ := json.Marshal(b)
-	return bytes.Equal(ab, bb)
 }

@@ -11,8 +11,6 @@ import (
 	"github.com/poneding/ktx/internal/types"
 	"github.com/poneding/ktx/internal/util"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/rand"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/util/homedir"
@@ -22,6 +20,43 @@ var (
 	DefaultConfigDir  = filepath.Join(homedir.HomeDir(), ".kube")
 	DefaultConfigFile = filepath.Join(DefaultConfigDir, "config")
 )
+
+// NewConfig returns a new kubeconfig
+func NewConfig() *clientcmdapi.Config {
+	return &clientcmdapi.Config{
+		APIVersion: "v1",
+		Kind:       "Config",
+		Contexts:   make(map[string]*clientcmdapi.Context),
+		Clusters:   make(map[string]*clientcmdapi.Cluster),
+		AuthInfos:  make(map[string]*clientcmdapi.AuthInfo),
+	}
+}
+
+// StandardizeConfig standardizes the cluster and user names in the kubeconfig
+func StandardizeConfig(config *clientcmdapi.Config) {
+	new := NewConfig()
+
+	for ctxName, ctx := range config.Contexts {
+		if _, ok := config.Clusters[ctx.Cluster]; !ok {
+			continue
+		}
+		if _, ok := config.AuthInfos[ctx.AuthInfo]; !ok {
+			continue
+		}
+
+		new.Clusters["cluster-"+ctxName] = config.Clusters[ctx.Cluster]
+		new.AuthInfos["user-"+ctxName] = config.AuthInfos[ctx.AuthInfo]
+
+		new.Contexts[ctxName] = ctx
+		new.Contexts[ctxName].Cluster = "cluster-" + ctxName
+		new.Contexts[ctxName].AuthInfo = "user-" + ctxName
+	}
+
+	if _, ok := new.Contexts[config.CurrentContext]; ok {
+		new.CurrentContext = config.CurrentContext
+	}
+	*config = *new
+}
 
 // LoadConfigFromFile loads the kubeconfig from the file
 func LoadConfigFromFile(file string) *clientcmdapi.Config {
@@ -91,15 +126,13 @@ func ListContexts(config *clientcmdapi.Config) []*types.ContextProfile {
 }
 
 // GenerateConfigForServiceAccount generates kubeconfig for service account in the given namespace
-func GenerateConfigForServiceAccount(serviceAccount, namespace string) *clientcmdapi.Config {
-	CheckOrInitConfig()
-
-	restConfig, err := clientcmd.BuildConfigFromFlags("", DefaultConfigFile)
+func GenerateConfigForServiceAccount(kubeconfig, serviceAccount, namespace string) *clientcmdapi.Config {
+	restConfig, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
-		output.Fatal("Failed to build kubernetes rest config: %s from file %s", err, DefaultConfigFile)
+		output.Fatal("Failed to build kubernetes rest config: %s from file %s", err, kubeconfig)
 	}
 
-	kubeClientset := Client(DefaultConfigFile)
+	kubeClientset := Client(kubeconfig)
 	sa := GetServiceAccount(kubeClientset, serviceAccount, namespace)
 
 	var secret *v1.Secret
@@ -119,16 +152,10 @@ func GenerateConfigForServiceAccount(serviceAccount, namespace string) *clientcm
 		secret = GetSecret(kubeClientset, sa.Secrets[0].Name, namespace)
 	}
 
-	return buildConfigFromSecret(restConfig, secret)
-}
-
-// buildConfigFromSecret builds kubeconfig from the secret
-func buildConfigFromSecret(kubecfg *rest.Config, secret *v1.Secret) *clientcmdapi.Config {
 	var (
-		suffix     = rand.String(5)
-		cfgContext = "context-" + suffix
-		cfgCluster = "cluster-" + suffix
-		cfgUser    = "user-" + suffix
+		cfgContext = serviceAccount
+		cfgCluster = "cluster-" + serviceAccount
+		cfgUser    = "user-" + serviceAccount
 	)
 
 	return &clientcmdapi.Config{
@@ -144,7 +171,7 @@ func buildConfigFromSecret(kubecfg *rest.Config, secret *v1.Secret) *clientcmdap
 		},
 		Clusters: map[string]*clientcmdapi.Cluster{
 			cfgCluster: {
-				Server:                   kubecfg.Host,
+				Server:                   restConfig.Host,
 				CertificateAuthorityData: secret.Data["ca.crt"],
 			},
 		},

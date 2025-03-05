@@ -14,10 +14,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
-var (
-	removeName string
-)
-
 // removeCmd represents the remove command
 var removeCmd = &cobra.Command{
 	Use:     "remove",
@@ -53,29 +49,12 @@ func removeContext(config *api.Config, dst string) {
 		output.Fatal("Context <%s> not found.", dst)
 	}
 
-	if prompt.YesNo(fmt.Sprintf("Are you sure you want to remove context %s", dst)) != "Yes" {
+	if !prompt.YesNo(fmt.Sprintf("Are you sure you want to remove context %s", dst)) {
 		return
 	}
 
-	// 如果没有其他 context 引用这个 cluster 或者 user，那么删除这个 cluster 和 user
-	var keepCluster, keepUser bool
-	for ctxName, ctx := range config.Contexts {
-		if ctxName != dst {
-			if ctx.Cluster == dstCtx.Cluster {
-				keepCluster = true
-			}
-			if ctx.AuthInfo == dstCtx.AuthInfo {
-				keepUser = true
-			}
-		}
-	}
-	if !keepCluster {
-		delete(config.Clusters, dstCtx.Cluster)
-	}
-	if !keepUser {
-		delete(config.AuthInfos, dstCtx.AuthInfo)
-	}
-
+	delete(config.Clusters, dstCtx.Cluster)
+	delete(config.AuthInfos, dstCtx.AuthInfo)
 	delete(config.Contexts, dst)
 
 	// 如果删除的是 current context，那么清空 current context

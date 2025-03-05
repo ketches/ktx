@@ -13,7 +13,7 @@ import (
 )
 
 // YesNo prompts the user to select Yes or No
-func YesNo(label string) string {
+func YesNo(label string) bool {
 	templates := &promptui.SelectTemplates{
 		Label:    promptui.Styler(promptui.FGYellow)("❖ {{ . }}?"),
 		Active:   promptui.Styler(promptui.FGCyan, promptui.FGUnderline)("➤ {{ . }}"),
@@ -31,19 +31,20 @@ func YesNo(label string) string {
 		output.Fatal("Prompt failed %v", err)
 	}
 
-	return obj
+	return obj == "Yes"
 }
 
 // TextInput prompts the user to input a value
-func TextInput(label string) string {
+func TextInput(label, def string) string {
 	prompt := promptui.Prompt{
 		Label: promptui.Styler(promptui.FGYellow)(label),
 		Validate: func(input string) error {
 			if len(strings.TrimSpace(input)) == 0 {
-				return fmt.Errorf("Please input a valid value")
+				return fmt.Errorf("please input a valid value")
 			}
 			return nil
 		},
+		Default: def,
 		Templates: &promptui.PromptTemplates{
 			Prompt:          promptui.Styler(promptui.FGCyan)("➤ {{ . }} "),
 			ValidationError: promptui.Styler(promptui.FGRed)("✗ {{ . }}"),

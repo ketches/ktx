@@ -43,26 +43,48 @@ func runRename(args []string) {
 	renameContext(dst, config)
 }
 
-func renameContext(dst string, config *clientcmdapi.Config) {
-	dstCtx, ok := config.Contexts[dst]
+func renameContext(oldCtxName string, config *clientcmdapi.Config) {
+	dstCtx, ok := config.Contexts[oldCtxName]
 	if !ok {
-		output.Fatal("Context <%s> not found.", dst)
+		output.Fatal("Context <%s> not found.", oldCtxName)
 	}
 
-	new := prompt.TextInput("Enter a new name")
-	if contextNameConflict(new, config) {
-		if prompt.YesNo(fmt.Sprintf("Context name <%s> already exists, rename it", new)) != "Yes" {
+	var (
+		oldCluster = dstCtx.Cluster
+		oldUser    = dstCtx.AuthInfo
+		cluster    = config.Clusters[dstCtx.Cluster]
+		user       = config.AuthInfos[dstCtx.AuthInfo]
+	)
+
+	newCtxName := prompt.TextInput("Enter a new name", oldCtxName)
+	for contextNameConflict(newCtxName, config) {
+		if newCtxName == oldCtxName {
+			output.Done("Context <%s> not changed.", oldCtxName)
 			return
 		}
-		new = prompt.TextInput("Enter a new name")
+
+		newCtxName = prompt.TextInput(fmt.Sprintf("Context name <%s> already exists, enter a new name", newCtxName), newCtxName)
+		dstCtx.Cluster = "cluster-" + newCtxName
+		dstCtx.AuthInfo = "user-" + newCtxName
 	}
 
-	delete(config.Contexts, dst)
-	if config.CurrentContext == dst {
-		config.CurrentContext = new
+	if dstCtx.Cluster != oldCluster {
+		dstCtx.Cluster = "cluster-" + newCtxName
+		config.Clusters[dstCtx.Cluster] = cluster
+		delete(config.Clusters, oldCluster)
 	}
-	config.Contexts[new] = dstCtx
+
+	if dstCtx.AuthInfo != oldUser {
+		dstCtx.AuthInfo = "user-" + newCtxName
+		config.AuthInfos[dstCtx.AuthInfo] = user
+		delete(config.AuthInfos, oldUser)
+	}
+	config.Contexts[newCtxName] = dstCtx
+	if config.CurrentContext == oldCtxName {
+		config.CurrentContext = newCtxName
+	}
+	delete(config.Contexts, oldCtxName)
 
 	kube.SaveConfigToFile(config, rootFlag.kubeconfig)
-	output.Done("Context <%s> renamed to <%s>.", dst, new)
+	output.Done("Context <%s> renamed to <%s>.", oldCtxName, newCtxName)
 }
