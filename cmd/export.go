@@ -19,7 +19,6 @@ import (
 	completion "github.com/poneding/ktx/internal/completion"
 	"github.com/poneding/ktx/internal/kube"
 	"github.com/poneding/ktx/internal/output"
-	"github.com/poneding/ktx/internal/prompt"
 	"github.com/spf13/cobra"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
@@ -35,6 +34,7 @@ var exportCmd = &cobra.Command{
 	Use:   "export",
 	Short: "Export context(s) from specified kubeconfig(~/.kube/config by default)",
 	Long:  `Export context(s) from specified kubeconfig(~/.kube/config by default)`,
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		runExport(args)
 	},
@@ -50,12 +50,7 @@ func init() {
 func runExport(args []string) {
 	config := kube.LoadConfigFromFile(rootFlag.kubeconfig)
 
-	dsts := args
-	if len(dsts) == 0 {
-		dsts = []string{prompt.ContextSelection("Select context to export", config)}
-	}
-
-	exportContext(config, dsts)
+	exportContext(config, args)
 }
 
 func exportContext(config *clientcmdapi.Config, dsts []string) {
@@ -85,7 +80,7 @@ func exportContext(config *clientcmdapi.Config, dsts []string) {
 		dstConfig.CurrentContext = dsts[0]
 	}
 
-	if exportFlag.output == "" {
+	if len(exportFlag.output) == 0 {
 		kube.PrintConfig(dstConfig)
 	} else {
 		kube.SaveConfigToFile(dstConfig, exportFlag.output)
