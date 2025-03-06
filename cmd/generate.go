@@ -22,6 +22,7 @@ import (
 )
 
 type generateFlags struct {
+	context        string
 	namespace      string
 	serviceAccount string
 	output         string
@@ -44,10 +45,12 @@ var generateCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(generateCmd)
 
-	generateCmd.Flags().StringVarP(&generateFlag.namespace, "namespace", "n", "default", "Namespace")
+	generateCmd.Flags().StringVarP(&generateFlag.context, "context", "c", "", "Context")
+	generateCmd.Flags().StringVarP(&generateFlag.namespace, "namespace", "n", kube.DefaultNamespace, "Namespace")
 	generateCmd.Flags().StringVar(&generateFlag.serviceAccount, "service-account", "", "ServiceAccount")
 	generateCmd.Flags().StringVarP(&generateFlag.output, "output", "o", "", "Output kube config file")
 
+	generateCmd.RegisterFlagCompletionFunc("context", completion.Context)
 	generateCmd.RegisterFlagCompletionFunc("namespace", completion.Namespace)
 	generateCmd.RegisterFlagCompletionFunc("service-account", completion.ServiceAccount)
 
@@ -55,8 +58,12 @@ func init() {
 }
 
 func runGenerate() {
-	config := kube.GenerateConfigForServiceAccount(rootFlag.kubeconfig, generateFlag.serviceAccount, generateFlag.namespace)
-	if generateFlag.output == "" {
+	generateContext(rootFlag.kubeconfig, generateFlag.context, generateFlag.namespace, generateFlag.serviceAccount)
+}
+
+func generateContext(kubeconfig, context, namespace, serviceAccount string) {
+	config := kube.GenerateConfigForServiceAccount(kubeconfig, context, namespace, serviceAccount)
+	if len(generateFlag.output) == 0 {
 		kube.PrintConfig(config)
 	} else {
 		kube.SaveConfigToFile(config, generateFlag.output)
