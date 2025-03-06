@@ -57,7 +57,7 @@ func init() {
 func runSetNamespace() {
 	config := kube.LoadConfigFromFile(rootFlag.kubeconfig)
 
-	ctxName := setServerFlag.context
+	ctxName := setNamespaceFlag.context
 	if len(ctxName) == 0 {
 		ctxName = config.CurrentContext
 	}
