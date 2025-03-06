@@ -76,18 +76,16 @@ func renameContext(oldCtxName string, config *clientcmdapi.Config) {
 		}
 
 		newCtxName = prompt.TextInput(fmt.Sprintf("Context name <%s> already exists, enter a new name", newCtxName), newCtxName)
-		dstCtx.Cluster = "cluster-" + newCtxName
-		dstCtx.AuthInfo = "user-" + newCtxName
 	}
 
+	dstCtx.Cluster = "cluster-" + newCtxName
+	dstCtx.AuthInfo = "user-" + newCtxName
 	if dstCtx.Cluster != oldCluster {
-		dstCtx.Cluster = "cluster-" + newCtxName
 		config.Clusters[dstCtx.Cluster] = cluster
 		delete(config.Clusters, oldCluster)
 	}
 
 	if dstCtx.AuthInfo != oldUser {
-		dstCtx.AuthInfo = "user-" + newCtxName
 		config.AuthInfos[dstCtx.AuthInfo] = user
 		delete(config.AuthInfos, oldUser)
 	}
