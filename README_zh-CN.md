@@ -48,6 +48,9 @@ ktx list
 3. 切换集群上下文
 
 ```bash
+# 切换上下文
+ktx
+
 # 切换到指定集群上下文
 ktx switch kind-cluster-01
 
@@ -92,3 +95,15 @@ ktx generate --service-account default -f .kube/my-gen-config
 ```
 
 命令别名：`ktx gen`
+
+8. 设置命名空间
+
+```bash
+ktx set-namespace --namespace default
+```
+
+9. 设置 Server 地址
+
+```bash
+ktx set-server --server https://api.k8s.local:6443
+```

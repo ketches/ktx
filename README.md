@@ -48,6 +48,9 @@ Alias: `ktx ls`
 3. Switch cluster context
 
 ```bash
+# Switch contexts
+ktx
+
 # Switch to specified cluster context
 ktx switch kind-cluster-01
 
@@ -92,3 +95,15 @@ ktx generate --service-account default -f .kube/my-gen-config
 ```
 
 Alias: `ktx gen`
+
+8. Set namespace
+
+```bash
+ktx set-namespace --namespace default
+```
+
+9. Set Server address
+
+```bash
+ktx set-server --server https://api.k8s.local:6443
+```
