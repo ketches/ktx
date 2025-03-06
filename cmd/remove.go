@@ -78,7 +78,7 @@ func removeContext(config *api.Config, dst string) {
 	output.Done("Context <%s> removed.", dst)
 
 	// 如果当前没有 context，那么提示用户选择一个 context
-	if len(config.Contexts) > 0 && config.CurrentContext == "" {
+	if len(config.CurrentContext) == 0 && len(config.Contexts) > 0 {
 		if len(config.Contexts) > 0 {
 			new := prompt.ContextSelection("Select a context as current", config)
 			config.CurrentContext = new

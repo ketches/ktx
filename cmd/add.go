@@ -110,7 +110,7 @@ func merge(config, new *clientcmdapi.Config) {
 	kube.SaveConfigToFile(config, rootFlag.kubeconfig)
 
 	// 如果当前没有 context，那么提示用户选择一个 context
-	if config.CurrentContext == "" && len(config.Contexts) > 0 {
+	if len(config.CurrentContext) == 0 && len(config.Contexts) > 0 {
 		if len(config.Contexts) == 1 {
 			for ctxName := range config.Contexts {
 				config.CurrentContext = ctxName

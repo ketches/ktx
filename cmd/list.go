@@ -56,7 +56,7 @@ func runList() {
 	listContexts(ctxs)
 
 	// 如果当前没有 context，那么提示用户选择一个 context
-	if config.CurrentContext == "" {
+	if len(config.CurrentContext) == 0 {
 		config.CurrentContext = prompt.ContextSelection("Select a context as current", config)
 		kube.SaveConfigToFile(config, rootFlag.kubeconfig)
 	}
