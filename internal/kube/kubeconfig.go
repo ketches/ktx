@@ -19,6 +19,7 @@ import (
 var (
 	DefaultConfigDir  = filepath.Join(homedir.HomeDir(), ".kube")
 	DefaultConfigFile = filepath.Join(DefaultConfigDir, "config")
+	DefaultNamespace  = "default"
 )
 
 // NewConfig returns a new kubeconfig
@@ -111,7 +112,7 @@ func ListContexts(config *clientcmdapi.Config) []*types.ContextProfile {
 			Name:      contextName,
 			Cluster:   context.Cluster,
 			User:      context.AuthInfo,
-			Namespace: util.If(context.Namespace != "", context.Namespace, "default"),
+			Namespace: util.If(len(context.Namespace) > 0, context.Namespace, DefaultNamespace),
 			Server:    config.Clusters[context.Cluster].Server,
 		}
 		item.Emoji = util.If(item.Current, "✦", " ")
@@ -125,14 +126,11 @@ func ListContexts(config *clientcmdapi.Config) []*types.ContextProfile {
 	return contexts
 }
 
-// GenerateConfigForServiceAccount generates kubeconfig for service account in the given namespace
-func GenerateConfigForServiceAccount(kubeconfig, serviceAccount, namespace string) *clientcmdapi.Config {
-	restConfig, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		output.Fatal("Failed to build kubernetes rest config: %s from file %s", err, kubeconfig)
-	}
+// GenerateConfigForServiceAccount generates kubeconfig for service account
+func GenerateConfigForServiceAccount(kubeconfig, context, namespace, serviceAccount string) *clientcmdapi.Config {
+	restConfig := config(kubeconfig, context)
 
-	kubeClientset := Client(kubeconfig)
+	kubeClientset := Client(kubeconfig, context)
 	sa := GetServiceAccount(kubeClientset, serviceAccount, namespace)
 
 	var secret *v1.Secret

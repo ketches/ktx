@@ -43,13 +43,30 @@ func ContextArray(cmd *cobra.Command, args []string, toComplete string) ([]strin
 	return completions, cobra.ShellCompDirectiveNoFileComp
 }
 
+// Server is a shell completion function that completes server names, just one completion.
+func Server(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) > 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	config := kube.LoadConfigFromFile(cmd.Flag("kubeconfig").Value.String())
+	ctxName := cmd.Flag("context").Value.String()
+	if len(ctxName) == 0 {
+		ctxName = config.CurrentContext
+	}
+	ctx := config.Contexts[ctxName]
+
+	completions := []string{config.Clusters[ctx.Cluster].Server}
+	return completions, cobra.ShellCompDirectiveNoFileComp
+}
+
 // Namespace is a shell completion function that completes namespace names, just one completion.
 func Namespace(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	if len(args) > 0 {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	kubeClientset := kube.Client(cmd.Flag("kubeconfig").Value.String())
+	kubeClientset := kube.Client(cmd.Flag("kubeconfig").Value.String(), cmd.Flag("context").Value.String())
 
 	return kube.ListNamespaces(kubeClientset), cobra.ShellCompDirectiveNoFileComp
 }
@@ -60,7 +77,7 @@ func ServiceAccount(cmd *cobra.Command, args []string, toComplete string) ([]str
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 
-	kubeClientset := kube.Client(cmd.Flag("kubeconfig").Value.String())
+	kubeClientset := kube.Client(cmd.Flag("kubeconfig").Value.String(), cmd.Flag("context").Value.String())
 
 	return kube.ListServiceAccounts(kubeClientset, cmd.Flag("namespace").Value.String()), cobra.ShellCompDirectiveNoFileComp
 }
