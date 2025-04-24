@@ -1,4 +1,9 @@
-.PHONY:
+.PHONY: install
+install:
+	@echo "» installing ktx..."
+	go install -ldflags="-s -w" ./cmd
+
+.PHONY: release
 release:
 	@if [ -z "${VERSION}" ]; then \
 		echo "VERSION is not set"; \
