@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPO_OWNER="poneding"
+REPO_OWNER="ketches"
 REPO_NAME="ktx"
 BINARY_NAME="ktx"
 INSTALL_DIR="/usr/local/bin"

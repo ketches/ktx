@@ -7,9 +7,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/poneding/ktx/internal/output"
-	"github.com/poneding/ktx/internal/types"
-	"github.com/poneding/ktx/internal/util"
+	"github.com/ketches/ktx/internal/output"
+	"github.com/ketches/ktx/internal/types"
+	"github.com/ketches/ktx/internal/util"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"

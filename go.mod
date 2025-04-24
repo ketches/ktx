@@ -1,4 +1,4 @@
-module github.com/poneding/ktx
+module github.com/ketches/ktx
 
 go 1.24
 

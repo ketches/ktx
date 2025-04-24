@@ -1,7 +1,7 @@
 package kube
 
 import (
-	"github.com/poneding/ktx/internal/output"
+	"github.com/ketches/ktx/internal/output"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"

@@ -11,7 +11,7 @@ ktx is an easy-to-use command line tool for kubernetes multi-cluster context man
 - Install with `go install`
 
 ```bash
-go install -u github.com/poneding/ktx@latest
+go install -u github.com/ketches/ktx@latest
 ```
 
 - Install from binary
@@ -19,12 +19,12 @@ go install -u github.com/poneding/ktx@latest
 For MacOS or Linux:
 
 ```bash
-curl -sSL https://github.com/poneding/ktx/raw/master/install.sh | sh
+curl -sSL https://github.com/ketches/ktx/raw/master/install.sh | sh
 ```
 
 For Windows:
 
-Download the lastest executable from [Releases](https://github.com/poneding/ktx/releases/latest) and add it to the PATH.
+Download the lastest executable from [Releases](https://github.com/ketches/ktx/releases/latest) and add it to the PATH.
 
 ## Usage
 

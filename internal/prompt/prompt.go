@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ketches/ktx/internal/kube"
+	"github.com/ketches/ktx/internal/output"
+	"github.com/ketches/ktx/internal/types"
 	"github.com/manifoldco/promptui"
-	"github.com/poneding/ktx/internal/kube"
-	"github.com/poneding/ktx/internal/output"
-	"github.com/poneding/ktx/internal/types"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 

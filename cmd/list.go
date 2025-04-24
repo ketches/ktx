@@ -1,5 +1,5 @@
 /*
-Copyright © 2025 Pone Ding <poneding@gmail.com>
+Copyright © 2025 The Ketches Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package cmd
 
 import (
@@ -20,11 +21,11 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
-	completion "github.com/poneding/ktx/internal/completion"
-	"github.com/poneding/ktx/internal/kube"
-	"github.com/poneding/ktx/internal/output"
-	"github.com/poneding/ktx/internal/prompt"
-	"github.com/poneding/ktx/internal/types"
+	completion "github.com/ketches/ktx/internal/completion"
+	"github.com/ketches/ktx/internal/kube"
+	"github.com/ketches/ktx/internal/output"
+	"github.com/ketches/ktx/internal/prompt"
+	"github.com/ketches/ktx/internal/types"
 	"github.com/spf13/cobra"
 )
 

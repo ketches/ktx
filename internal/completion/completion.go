@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/poneding/ktx/internal/kube"
+	"github.com/ketches/ktx/internal/kube"
 	"github.com/spf13/cobra"
 )
 

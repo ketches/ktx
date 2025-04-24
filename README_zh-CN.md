@@ -11,7 +11,7 @@ ktx 是一个针对 Kubernetes 多集群上下文管理的命令行工具，简�
 - 通过 `go install` 安装
 
 ```bash
-go install -u github.com/poneding/ktx@latest
+go install -u github.com/ketches/ktx@latest
 ```
 
 - 通过二进制文件安装
@@ -19,12 +19,12 @@ go install -u github.com/poneding/ktx@latest
 对于 MacOS 或 Linux：
 
 ```bash
-curl -sSL https://github.com/poneding/ktx/raw/master/install.sh | sh
+curl -sSL https://github.com/ketches/ktx/raw/master/install.sh | sh
 ```
 
 对于 Windows：
 
-从 [Releases](https://github.com/poneding/ktx/releases/latest) 下载最新版本可执行文件并将其添加到 PATH。
+从 [Releases](https://github.com/ketches/ktx/releases/latest) 下载最新版本可执行文件并将其添加到 PATH。
 
 ## 使用
 
