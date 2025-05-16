@@ -1,7 +1,7 @@
 .PHONY: install
 install:
 	@echo "» installing ktx..."
-	go install -ldflags="-s -w" ./cmd
+	go install -ldflags="-s -w"
 
 .PHONY: release
 release:

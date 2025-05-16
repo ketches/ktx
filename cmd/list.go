@@ -18,6 +18,8 @@ package cmd
 
 import (
 	"os"
+	"sync"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -28,6 +30,12 @@ import (
 	"github.com/ketches/ktx/internal/types"
 	"github.com/spf13/cobra"
 )
+
+type listFlags struct {
+	clusterInfo bool
+}
+
+var listFlag listFlags
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
@@ -43,6 +51,8 @@ var listCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(listCmd)
+
+	listCmd.Flags().BoolVar(&listFlag.clusterInfo, "cluster-info", false, "Show cluster info eg. status, version, and more.")
 }
 
 func runList() {
@@ -63,15 +73,62 @@ func runList() {
 	}
 }
 
+var tableStyle = table.Style{
+	Name:    "KrbTableStyle",
+	Box:     table.StyleBoxDefault,
+	Color:   table.ColorOptionsDefault,
+	Format:  table.FormatOptionsDefault,
+	HTML:    table.DefaultHTMLOptions,
+	Options: table.OptionsNoBordersAndSeparators,
+	Size:    table.SizeOptionsDefault,
+	Title:   table.TitleOptionsDefault,
+}
+
 func listContexts(ctxs []*types.ContextProfile) {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"", "name", "namespace", "cluster_name", "user_name", "server"})
+	row := table.Row{"", "name", "namespace", "server"}
+	if listFlag.clusterInfo {
+		row = append(row, "status", "version")
+
+		var wg sync.WaitGroup
+		for i, ctx := range ctxs {
+			wg.Add(1)
+			go func(i int, ctx *types.ContextProfile) {
+				defer wg.Done()
+				var (
+					clusterStatus  = types.ClusterStatusUnavailable
+					clusterVersion = "-"
+				)
+				timer := time.NewTimer(time.Second * 5)
+				defer timer.Stop()
+				select {
+				case <-timer.C:
+					clusterStatus = types.ClusterStatusTimeout
+				default:
+					dc, _ := kube.DiscoveryClient(rootFlag.kubeconfig, ctx.Name)
+					if dc != nil {
+						cv, _ := kube.Version(dc)
+						if cv != "" {
+							clusterStatus = types.ClusterStatusAvailable
+							clusterVersion = cv
+						}
+					}
+				}
+
+				ctx.ClusterStatus = clusterStatus
+				ctx.ClusterVersion = clusterVersion
+			}(i, ctx)
+		}
+		wg.Wait()
+	}
+
+	t.AppendHeader(row)
 
 	for _, ctx := range ctxs {
 		appendRow(t, ctx)
 	}
-	t.SetStyle(table.StyleRounded)
+	t.SetStyle(tableStyle)
 	t.Render()
 }
 
@@ -79,11 +136,13 @@ func appendRow(t table.Writer, ctx *types.ContextProfile) {
 	if ctx.Current {
 		ctx.Name = color.CyanString(ctx.Name)
 		ctx.Namespace = color.CyanString(ctx.Namespace)
-		ctx.Cluster = color.CyanString(ctx.Cluster)
-		ctx.User = color.CyanString(ctx.User)
 		ctx.Server = color.CyanString(ctx.Server)
 	}
-	t.AppendRow(table.Row{ctx.Emoji, ctx.Name, ctx.Namespace, ctx.Cluster, ctx.User, ctx.Server}, table.RowConfig{
+	row := table.Row{ctx.Emoji, ctx.Name, ctx.Namespace, ctx.Server}
+	if listFlag.clusterInfo {
+		row = append(row, string(ctx.ClusterStatus.ColorString()), color.CyanString(ctx.ClusterVersion))
+	}
+	t.AppendRow(row, table.RowConfig{
 		AutoMerge: true,
 	})
 }
