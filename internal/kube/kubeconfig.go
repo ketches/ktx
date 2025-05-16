@@ -144,9 +144,9 @@ func ListContexts(config *clientcmdapi.Config) []*types.ContextProfile {
 
 // GenerateConfigForServiceAccount generates kubeconfig for service account
 func GenerateConfigForServiceAccount(kubeconfig, context, namespace, serviceAccount string) *clientcmdapi.Config {
-	restConfig := config(kubeconfig, context)
+	restConfig := configOrDie(kubeconfig, context)
 
-	kubeClientset := Client(kubeconfig, context)
+	kubeClientset := ClientOrDie(kubeconfig, context)
 	sa := GetServiceAccount(kubeClientset, serviceAccount, namespace)
 
 	var secret *v1.Secret

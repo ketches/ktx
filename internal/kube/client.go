@@ -24,26 +24,49 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// Client creates a new kubernetes client from the given kubeconfig file and context.
-func Client(kubeConfigFile, ctx string) kubernetes.Interface {
-	clientset, err := kubernetes.NewForConfig(config(kubeConfigFile, ctx))
+// ClientOrDie creates a new kubernetes client from the given
+// kubeconfig file and context, and panics if it fails.
+func ClientOrDie(kubeConfigFile, ctx string) kubernetes.Interface {
+	clientset, err := Client(kubeConfigFile, ctx)
 	if err != nil {
 		output.Fatal("Failed to create kubernetes client: %s from file %s", err, kubeConfigFile)
 	}
 	return clientset
 }
 
-// DiscoveryClient creates a new kubernetes discovery client from the given kubeconfig file and context.
+// Client creates a new kubernetes client from the given
+// kubeconfig file and context.
+func Client(kubeConfigFile, ctx string) (kubernetes.Interface, error) {
+	client, err := kubernetes.NewForConfig(configOrDie(kubeConfigFile, ctx))
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+// DiscoveryClient creates a new kubernetes discovery client
+// from the given kubeconfig file and context.
 func DiscoveryClient(kubeConfigFile, ctx string) (discovery.DiscoveryInterface, error) {
-	client, err := kubernetes.NewForConfig(config(kubeConfigFile, ctx))
+	client, err := Client(kubeConfigFile, ctx)
 	if err != nil {
 		return nil, err
 	}
 	return client.Discovery(), nil
 }
 
-// config creates a new kubernetes rest config from the given kubeconfig file.
-func config(kubeConfigFile, ctx string) *rest.Config {
+// configOrDie creates a new kubernetes rest configOrDie from the
+// given kubeconfig file, and panics if it fails.
+func configOrDie(kubeConfigFile, ctx string) *rest.Config {
+	config, err := config(kubeConfigFile, ctx)
+	if err != nil {
+		output.Fatal("Failed to build kubernetes rest config: %s from file %s", err, kubeConfigFile)
+	}
+	return config
+}
+
+// config creates a new kubernetes rest config from the given
+// kubeconfig file and context.
+func config(kubeConfigFile, ctx string) (*rest.Config, error) {
 	loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 	loadingRules.ExplicitPath = kubeConfigFile
 
@@ -56,7 +79,7 @@ func config(kubeConfigFile, ctx string) *rest.Config {
 
 	config, err := clientConfig.ClientConfig()
 	if err != nil {
-		output.Fatal("Failed to build kubernetes rest config: %s from file %s", err, kubeConfigFile)
+		return nil, err
 	}
-	return config
+	return config, nil
 }
