@@ -108,7 +108,7 @@ func listContexts(ctxs []*types.ContextProfile) {
 				default:
 					dc, _ := kube.DiscoveryClient(rootFlag.kubeconfig, ctx.Name)
 					if dc != nil {
-						cv, _ := kube.Version(dc)
+						cv, _ := kube.ServerVersion(dc)
 						if cv != "" {
 							clusterStatus = types.ClusterStatusAvailable
 							clusterVersion = cv
