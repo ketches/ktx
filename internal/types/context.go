@@ -46,6 +46,6 @@ func (cs ClusterStatus) ColorString() string {
 	case ClusterStatusUnavailable:
 		return color.RedString(string(cs))
 	default:
-		return color.WhiteString(string(cs))
+		return string(cs)
 	}
 }

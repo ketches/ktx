@@ -28,6 +28,7 @@ import (
 	"github.com/ketches/ktx/internal/output"
 	"github.com/ketches/ktx/internal/prompt"
 	"github.com/ketches/ktx/internal/types"
+	"github.com/ketches/ktx/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -96,16 +97,14 @@ func listContexts(ctxs []*types.ContextProfile) {
 			wg.Add(1)
 			go func(i int, ctx *types.ContextProfile) {
 				defer wg.Done()
+
 				var (
 					clusterStatus  = types.ClusterStatusUnavailable
-					clusterVersion = "-"
+					clusterVersion string
 				)
-				timer := time.NewTimer(time.Second * 5)
-				defer timer.Stop()
-				select {
-				case <-timer.C:
-					clusterStatus = types.ClusterStatusTimeout
-				default:
+				done := make(chan struct{})
+				go func() {
+					defer close(done)
 					dc, _ := kube.DiscoveryClient(rootFlag.kubeconfig, ctx.Name)
 					if dc != nil {
 						cv, _ := kube.ServerVersion(dc)
@@ -114,6 +113,15 @@ func listContexts(ctxs []*types.ContextProfile) {
 							clusterVersion = cv
 						}
 					}
+				}()
+
+				timer := time.NewTimer(time.Second * 2)
+				defer timer.Stop()
+
+				select {
+				case <-timer.C:
+					clusterStatus = types.ClusterStatusTimeout
+				case <-done:
 				}
 
 				ctx.ClusterStatus = clusterStatus
@@ -137,10 +145,11 @@ func appendRow(t table.Writer, ctx *types.ContextProfile) {
 		ctx.Name = color.CyanString(ctx.Name)
 		ctx.Namespace = color.CyanString(ctx.Namespace)
 		ctx.Server = color.CyanString(ctx.Server)
+		ctx.Emoji = color.CyanString(ctx.Emoji)
 	}
 	row := table.Row{ctx.Emoji, ctx.Name, ctx.Namespace, ctx.Server}
 	if listFlag.clusterInfo {
-		row = append(row, string(ctx.ClusterStatus.ColorString()), color.CyanString(ctx.ClusterVersion))
+		row = append(row, string(ctx.ClusterStatus.ColorString()), util.If(ctx.ClusterVersion == "", "-", color.CyanString(ctx.ClusterVersion)))
 	}
 	t.AppendRow(row, table.RowConfig{
 		AutoMerge: true,
